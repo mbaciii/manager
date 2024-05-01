@@ -1,0 +1,54 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-04-28 13:06+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: .\kasa\admin.py:6
+msgid "Serenata Accessories"
+msgstr ""
+
+#: .\kasa\admin.py:7 .\kasa\admin.py:8
+msgid "Menaxhuesi"
+msgstr ""
+
+#: .\kasa\models.py:13
+msgid "Produkti"
+msgstr ""
+
+#: .\kasa\models.py:14
+msgid "Produktet"
+msgstr ""
+
+#: .\kasa\models.py:29
+msgid "Shitja"
+msgstr ""
+
+#: .\kasa\models.py:30
+msgid "Shitjet"
+msgstr ""
+
+msgid "Welcome"
+msgstr "Mirësevini"
+
+msgid "View site"
+msgstr "Shiko faqen"
+
+msgid "Change password"
+msgstr "Ndrysho fjalëkalimin"
+
+msgid "Log out"
+msgstr "Dalje"

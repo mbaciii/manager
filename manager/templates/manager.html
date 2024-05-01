@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manager</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+    <style>
+        /* CSS for search input */
+        #searchInput {
+            width: 200px;
+            float: right;
+            margin-top: 10px;
+                }
+
+        .table-container {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+
+
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background-color: white;
+        }
+
+        tbody tbody {
+            display: block;
+            max-height: calc(100vh - 250px); /* Adjust the value (250px) as needed */
+            overflow-y: auto;
+        }
+
+        tfoot {
+            position: sticky;
+            bottom: 0;
+            z-index: 1;
+            background-color: white;
+        }
+
+    /* Updated CSS to initially hide arrow icons */
+    .arrow-up,
+    .arrow-down {
+        display: none;
+    }
+
+    .visible {
+        display: inline-block;
+    }
+
+
+    .arrow-up::before {
+        content: "\25B2";
+    }
+
+    .arrow-down::before {
+        content: "\25BC";
+    }
+
+    </style>
+</head>
+<body>
+
+
+<div class="container">
+    <br>
+    <div class="row align-items-end justify-content-end">
+
+        <div class="col-auto">
+            <select id="storeFilter" class="form-control mb-2" >
+                <option value="">Te gjitha dyqanet</option>
+                <option value="d1">d1</option>
+                <option value="d2">d2</option>
+                <option value="d3">d3</option>
+                <option value="d4">d4</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <div class="input-group mb-2">
+                <input type="text" class="form-control" id="datetimeRangePicker" placeholder="Zgjidh date dhe ore" style="text-align: center; text-decoration-color: #000;">
+                <div class="input-group-append">
+                    <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-auto">
+            <input type="text" id="searchInput" class="form-control mb-2" placeholder="Kerko produkt...">
+        </div>
+        <div class="col-auto align-self-end">
+            <a class="btn btn-danger btn-md float-end mb-2" href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+    <h1>Shitjet</h1>
+    <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+        <table class="table" id="itemTable">
+            <thead>
+                <tr>
+                    <th id="product">Produkti<span class="arrow-up"></span><span class="arrow-down"> <span id="product-arrow"></span></th>
+                    <th id="price">Cmimi <span class="arrow-up"></span><span class="arrow-down"><span id="price-arrow"></span></th>
+                    <th id="date">Data <span class="arrow-up"></span><span class="arrow-down"><span id="date-arrow"></span></th>
+                    <th id="time">Ora</th>
+                    <th id="receipt">Fatura</th>
+                    <th id="store">Dyqani <span class="arrow-up"></span><span class="arrow-down"></span></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td class="euro-price">{{ item.price|floatformat }}</td>
+                <td>{{ item.timestamp|date:"Y-m-d" }}</td>
+                <td>{{ item.timestamp|time:"H:i" }}</td>
+                <td>{{ item.receipt_code }}</td>
+                <td>{{ item.store }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+                <th><p>Totali i produkteve: <span id="totalItems"></span></p></th>
+                <th ><p id="totalEuro"></p></th>
+                <th ><p id="totalLeke"></p></th>
+                <th ><p id="totalDollar"></p></th>
+                <th ></th>
+                <th ></th>
+
+        </tfoot>
+    </table>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+
+<script>
+    $(document).ready(function() {
+
+    // Function to update the selected date range display
+    function updateSelectedDateRange(startDate, endDate) {
+        console.log(startDate, endDate)
+        if (startDate === endDate) {
+            var selectedRange = startDate;
+        }
+        else {
+            var selectedRange = startDate + ' - ' + endDate;
+        }
+        $('#datetimeRangePicker').attr('placeholder', selectedRange);
+    }
+
+    function applyStoreFilter(selectedStore) {
+        console.log("Selected Store:", selectedStore);
+        $('tbody tr').each(function() {
+            var storeValue = $(this).find('td:eq(5)').text();
+            console.log("Row Store Value (Before):", storeValue);
+        });
+
+        $('tbody tr').hide();
+
+        $('tbody tr').filter(function() {
+            var storeValue = $(this).find('td:eq(5)').text();
+            console.log("Row Store Value (After):", storeValue);
+            return selectedStore === '' || storeValue === selectedStore;
+        }).show();
+
+        calculateTotalPrices(); // Recalculate total prices after filtering
+    }
+
+    var selectedStore = ''; // Variable to store the selected store value
+
+    // Event listener for store filter dropdown
+    $('#storeFilter').change(function() {
+        selectedStore = $(this).val(); // Update the selected store value
+        applyFilters(); // Apply all filters when store filter changes
+    });
+
+    // Function to apply the combined filter
+    function applyCombinedFilter(startDate, endDate, startTime, endTime, searchText) {
+        $('tbody tr').hide();
+        $('tbody tr').filter(function() {
+            var date = $(this).find('td:eq(2)').text();
+            var time = $(this).find('td:eq(3)').text();
+            var product = $(this).find('td:eq(0)').text().toLowerCase();
+            var store = $(this).find('td:eq(5)').text();
+            return (date >= startDate && date <= endDate && time >= startTime && time <= endTime && product.indexOf(searchText) !== -1 && (selectedStore === '' || store === selectedStore));
+        }).show();
+        calculateTotalPrices();
+        updateSelectedDateRange(startDate, endDate); // Update selected date range display
+    }
+
+    // Function to apply filters
+    function applyFilters() {
+        var startDate = $('#datetimeRangePicker').data('daterangepicker').startDate.format('YYYY-MM-DD');
+        var endDate = $('#datetimeRangePicker').data('daterangepicker').endDate.format('YYYY-MM-DD');
+        var startTime = $('#datetimeRangePicker').data('daterangepicker').startDate.format('HH:mm');
+        var endTime = $('#datetimeRangePicker').data('daterangepicker').endDate.format('HH:mm');
+        var searchText = $('#searchInput').val().toLowerCase();
+        applyCombinedFilter(startDate, endDate, startTime, endTime, searchText); // Use the stored selected store value
+
+    }
+
+    // Get today's date and time
+    var today = moment();
+    var startTime = moment().startOf('day').format('HH:mm');
+    var endTime = moment().endOf('day').format('HH:mm');
+
+    // Initialize the Bootstrap Date Time Range Picker for date and time range selection with today's date and time
+    $('#datetimeRangePicker').daterangepicker({
+        autoUpdateInput: false,
+        timePicker: true,
+        timePicker24Hour: true,
+        locale: {
+            format: 'YYYY-MM-DD HH:mm',
+        },
+        startDate: today.startOf('day').format('YYYY-MM-DD 00:00'), // Set start time to 00:00,
+        endDate: today.endOf('day')
+    });
+
+    // Apply the selected date range filter to the table
+    function applyDateRangeFilter(startDate, endDate) {
+        $('tbody tr').hide();
+        $('tbody tr').filter(function() {
+            var date = $(this).find('td:eq(2)').text();
+            return (date >= startDate && date <= endDate);
+        }).show();
+    }
+
+    // Trigger the date range filter when the page loads
+    applyDateRangeFilter(today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD'));
+
+    updateSelectedDateRange(today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')); // Update selected date range display
+
+    // Trigger the date and time range filter when the page loads
+    $('#datetimeRangePicker').trigger('apply.daterangepicker');
+
+    // Apply the combined filter when the date and time range is changed
+    $('#datetimeRangePicker').on('apply.daterangepicker', function(ev, picker) {
+        var startDate = picker.startDate.format('YYYY-MM-DD');
+        var endDate = picker.endDate.format('YYYY-MM-DD');
+        var startTime = picker.startDate.format('HH:mm');
+        var endTime = picker.endDate.format('HH:mm');
+        var searchText = $('#searchInput').val().toLowerCase();
+        applyCombinedFilter(startDate, endDate, startTime, endTime, searchText);
+    });
+
+    // Search functionality
+    $('#searchInput').on('keyup', function() {
+        var searchText = $(this).val().toLowerCase();
+        var startDate = $('#datetimeRangePicker').data('daterangepicker').startDate.format('YYYY-MM-DD');
+        var endDate = $('#datetimeRangePicker').data('daterangepicker').endDate.format('YYYY-MM-DD');
+        var startTime = $('#datetimeRangePicker').data('daterangepicker').startDate.format('HH:mm');
+        var endTime = $('#datetimeRangePicker').data('daterangepicker').endDate.format('HH:mm');
+        applyCombinedFilter(startDate, endDate, startTime, endTime, searchText);
+    });
+
+    // Function to calculate total prices in Euro, Dollar, and Leke
+    function calculateTotalPrices() {
+        var totalEuro = 0;
+        var totalLeke = 0;
+        var totalDollar = 0;
+        var totalItems = $('tbody tr:visible').length;
+
+        $('tbody tr:visible').each(function() {
+            var euroPrice = parseFloat($(this).find('.euro-price').text());
+            totalEuro += euroPrice;
+            totalLeke += euroPrice * parseFloat("{{ euro }}");
+            totalDollar += (euroPrice * parseFloat("{{ euro }}")) * parseFloat("{{ dollar }}") / 10000;
+        });
+
+        $('#totalEuro').text('EUR ' + totalEuro.toLocaleString('en'));
+        $('#totalLeke').text('LEK ' + totalLeke.toLocaleString('en'));
+        $('#totalDollar').text('USD ' +totalDollar.toLocaleString('en', { maximumFractionDigits: 2 }));
+        $('#totalItems').text(totalItems);
+    }
+
+
+
+    // Calculate total prices initially
+    calculateTotalPrices();
+
+
+    function adjustTableContainerHeight() {
+        var windowHeight = $(window).height();
+        var headerHeight = $('header').outerHeight(true) || 0;
+        var footerHeight = $('footer').outerHeight(true) || 0;
+        var containerHeight = windowHeight - headerHeight - footerHeight - 200; // Adjust the value (50) as needed
+        $('.table-container').css('max-height', containerHeight + 'px');
+    }
+
+    adjustTableContainerHeight();
+
+    $(window).resize(function() {
+        adjustTableContainerHeight();
+    });
+
+
+
+
+    var currentColumn = null;
+    var ascending = false;
+
+    // Function to sort the table based on a given column
+    function sortTable(columnIndex) {
+        var rows = $('#itemTable tbody tr').get();
+
+        rows.sort(function(a, b) {
+            var A = $(a).children('td').eq(columnIndex).text().toUpperCase();
+            var B = $(b).children('td').eq(columnIndex).text().toUpperCase();
+
+            if (columnIndex === 1) {
+                // Sort by price (numeric)
+                A = parseFloat(A);
+                B = parseFloat(B);
+            } else if (columnIndex === 2) {
+                // Sort by date (chronological)
+                A = new Date(A);
+                B = new Date(B);
+            }
+
+            if (!ascending) {
+                // Swap A and B for descending sorting
+                var temp = A;
+                A = B;
+                B = temp;
+            }
+
+            if (A < B) {
+                return -1;
+            }
+            if (A > B) {
+                return 1;
+            }
+            return 0;
+        });
+
+        $.each(rows, function(index, row) {
+            $('#itemTable tbody').append(row);
+        });
+    }
+
+
+
+    // Event listeners for column headers
+    $('#product').click(function() {
+        if (currentColumn === 0) {
+            ascending = !ascending;
+        } else {
+            currentColumn = 0;
+            ascending = true;
+        }
+        sortTable(0);
+        updateArrowIcons(0, ascending);
+    });
+
+    $('#price').click(function() {
+        if (currentColumn === 1) {
+            ascending = !ascending;
+        } else {
+            currentColumn = 1;
+            ascending = true;
+        }
+        sortTable(1);
+        updateArrowIcons(1, ascending);
+    });
+
+    $('#date').click(function() {
+        if (currentColumn === 2) {
+            ascending = !ascending;
+        } else {
+            currentColumn = 2;
+            ascending = true;
+        }
+        sortTable(2);
+        updateArrowIcons(2, ascending);
+    });
+
+
+    // Function to update arrow icons based on sorting direction
+    function updateArrowIcons(columnIndex, ascending) {
+        // Hide all arrow icons
+        $('.arrow-up, .arrow-down').hide();
+
+        // Show the appropriate arrow icon based on sorting direction
+        if (ascending) {
+            $('#itemTable th:eq(' + columnIndex + ') .arrow-up').show();
+        } else {
+            $('#itemTable th:eq(' + columnIndex + ') .arrow-down').show();
+        }
+    }
+
+
+
+    });
+</script>
+
+
+
+</body>
+</html>
