@@ -12,7 +12,7 @@ from django.urls import path, include
 
 # urls.py
 from django.urls import path
-from .views import FileUploadView
+from manager.views import FileUploadView
 
 
 urlpatterns = [
@@ -20,5 +20,6 @@ urlpatterns = [
     path('', views.manager, name='manager'),
     path('accounts/login/', custom_login, name='custom_login'),
     path('upload/', FileUploadView.as_view(), name='file-upload'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
 ]
