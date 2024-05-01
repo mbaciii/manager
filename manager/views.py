@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-import os
+import os, requests
 
 
 def custom_login(request):
@@ -51,7 +51,26 @@ from django.views.decorators.csrf import csrf_protect
 @method_decorator(csrf_exempt, name='dispatch')
 class FileUploadView(APIView):
     def post(self, request, format=None):
-        os.remove(os.path.join('', str(request.FILES.get('file'))))
+
+        USERNAME = 'mbaci'
+        API_TOKEN = '3ab87b4e1b23b1bef66739b12f32cfd913a70827'
+
+        # URL for the PythonAnywhere API
+        API_URL = f'https://www.pythonanywhere.com/api/v0/user/{USERNAME}/files/path/'
+
+        # Replace 'file_to_delete.txt' with the path to the file you want to delete
+        file_path = '/home/mbaci/manager/db1.sqlite3'
+
+        # Send a DELETE request to delete the file
+        response = requests.delete(API_URL + file_path, headers={'Authorization': f'Token {API_TOKEN}'})
+
+        # Check if the request was successful
+        if response.status_code == 204:
+            print("File deleted successfully.")
+        else:
+            print("Failed to delete file. Status code:", response.status_code)
+
+
         file_serializer = UploadedFileSerializer(data=request.data)
         if file_serializer.is_valid():
             file_serializer.save()

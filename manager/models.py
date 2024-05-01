@@ -4,5 +4,5 @@ import os
 from django.conf import settings
 
 class UploadedFile(models.Model):
-    file = models.FileField(upload_to='')
+    file = models.FileField(upload_to='manager/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
