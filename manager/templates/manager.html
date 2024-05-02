@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
-    <style>
+      <style>
         /* Updated CSS for search input */
         #searchInput {
             width: 100%;
@@ -16,6 +16,7 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            overflow-x: auto; /* Added overflow-x property */
             position: relative;
             max-width: 100%; /* Adjust the maximum width as needed */
             margin: 0 auto; /* Center the table */
@@ -23,7 +24,7 @@
 
         /* Updated CSS for table */
         .table {
-            width: 100%;
+            width: auto; /* Set width to auto */
             border-collapse: collapse;
         }
 
@@ -75,7 +76,7 @@
         /* Adjustments for smaller screens */
         @media only screen and (max-width: 600px) {
             .table-container {
-                max-height: calc(100vh - 250px); /* Adjust the value (150px) as needed */
+                max-height: calc(100vh - 350px); /* Adjust the value (150px) as needed */
             }
         }
 
@@ -89,6 +90,24 @@
         tfoot th {
             font-size: 14px; /* Adjust the font size as needed */
         }
+        
+        /* Adjustments for smaller screens */
+@media only screen and (max-width: 767px) {
+    .table {
+        width: 100%; /* Set table width to 100% on smaller screens */
+        border-collapse: collapse; /* Collapse borders to reduce spacing */
+        border-spacing: 0; /* Set border spacing to 0 */
+    }
+    .table th,
+    .table td {
+        padding: 8px; /* Adjust cell padding to reduce space between columns */
+        border: 1px solid #dee2e6; /* Add borders to cells */
+    }
+}
+
+        
+        
+        
     </style>
 </head>
 <body>
