@@ -30,7 +30,7 @@ DOLLAR = 90
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['mbaci.pythonanywhere.com']
+ALLOWED_HOSTS = ['mbaci.pythonanywhere.com', '*']
 
 
 # Application definition

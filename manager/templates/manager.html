@@ -2,25 +2,26 @@
 <html>
 <head>
     <title>Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
     <style>
-        /* CSS for search input */
+        /* Updated CSS for search input */
         #searchInput {
-            width: 200px;
-            float: right;
+            width: 100%;
             margin-top: 10px;
-                }
+        }
 
         .table-container {
             display: flex;
             flex-direction: column;
             overflow-y: auto;
             position: relative;
+            max-width: 100%; /* Adjust the maximum width as needed */
+            margin: 0 auto; /* Center the table */
         }
 
-
-
+        /* Updated CSS for table */
         .table {
             width: 100%;
             border-collapse: collapse;
@@ -31,11 +32,12 @@
             top: 0;
             z-index: 2;
             background-color: white;
+            padding: 5px; /* Adjust the padding as needed */
         }
 
         tbody tbody {
             display: block;
-            max-height: calc(100vh - 250px); /* Adjust the value (250px) as needed */
+            max-height: calc(100vh - 350px); /* Adjust the value (350px) as needed */
             overflow-y: auto;
         }
 
@@ -44,27 +46,49 @@
             bottom: 0;
             z-index: 1;
             background-color: white;
+            padding: 5px; /* Adjust the padding as needed */
         }
 
-    /* Updated CSS to initially hide arrow icons */
-    .arrow-up,
-    .arrow-down {
-        display: none;
-    }
+        /* Updated CSS to initially hide arrow icons */
+        .arrow-up,
+        .arrow-down {
+            display: none;
+        }
 
-    .visible {
-        display: inline-block;
-    }
+        .visible {
+            display: inline-block;
+        }
 
+        .arrow-up::before {
+            content: "\25B2";
+        }
 
-    .arrow-up::before {
-        content: "\25B2";
-    }
+        .arrow-down::before {
+            content: "\25BC";
+        }
 
-    .arrow-down::before {
-        content: "\25BC";
-    }
+        /* Make store column data uppercase */
+        .store-name {
+            text-transform: uppercase;
+        }
 
+        /* Adjustments for smaller screens */
+        @media only screen and (max-width: 600px) {
+            .table-container {
+                max-height: calc(100vh - 250px); /* Adjust the value (150px) as needed */
+            }
+        }
+
+        /* Set initial zoom level */
+        body {
+            zoom: 75%;
+        }
+
+        /* Adjust header and footer font size */
+        thead th,
+        tfoot th {
+            font-size: 14px; /* Adjust the font size as needed */
+        }
     </style>
 </head>
 <body>
@@ -72,43 +96,43 @@
 
 <div class="container">
     <br>
-    <div class="row align-items-end justify-content-end">
+    <div class="row align-items-end justify-content-between">
 
-        <div class="col-auto">
+        <div class="col-12 col-sm-auto align-self-end">
+            <a class="btn btn-danger btn-md float-end mb-2" href="{% url 'logout' %}">Logout</a>
+        </div>
+        <div class="col-6 col-sm-3">
             <select id="storeFilter" class="form-control mb-2" >
-                <option value="">Te gjitha dyqanet</option>
+                <option value="">All Stores</option>
                 <option value="d1">d1</option>
                 <option value="d2">d2</option>
                 <option value="d3">d3</option>
                 <option value="d4">d4</option>
             </select>
         </div>
-        <div class="col-auto">
+        <div class="col-6 col-sm-3">
             <div class="input-group mb-2">
-                <input type="text" class="form-control" id="datetimeRangePicker" placeholder="Zgjidh date dhe ore" style="text-align: center; text-decoration-color: #000;">
+                <input type="text" class="form-control" id="datetimeRangePicker" placeholder="Select Date and Time" style="text-align: center;">
                 <div class="input-group-append">
                     <span class="input-group-text"><i class="fa fa-calendar"></i></span>
                 </div>
             </div>
         </div>
-        <div class="col-auto">
-            <input type="text" id="searchInput" class="form-control mb-2" placeholder="Kerko produkt...">
-        </div>
-        <div class="col-auto align-self-end">
-            <a class="btn btn-danger btn-md float-end mb-2" href="{% url 'logout' %}">Logout</a>
+        <div class="col-12 col-sm-3">
+            <input type="text" id="searchInput" class="form-control mb-2" placeholder="Search Product...">
         </div>
     </div>
-    <h1>Shitjet</h1>
-    <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+    <h1>Sales</h1>
+    <div class="table-container">
         <table class="table" id="itemTable">
             <thead>
                 <tr>
-                    <th id="product">Produkti<span class="arrow-up"></span><span class="arrow-down"> <span id="product-arrow"></span></th>
-                    <th id="price">Cmimi <span class="arrow-up"></span><span class="arrow-down"><span id="price-arrow"></span></th>
-                    <th id="date">Data <span class="arrow-up"></span><span class="arrow-down"><span id="date-arrow"></span></th>
-                    <th id="time">Ora</th>
-                    <th id="receipt">Fatura</th>
-                    <th id="store">Dyqani <span class="arrow-up"></span><span class="arrow-down"></span></th>
+                    <th id="product">Product<span class="arrow-up"></span><span class="arrow-down"> <span id="product-arrow"></span></th>
+                    <th id="price">Price <span class="arrow-up"></span><span class="arrow-down"><span id="price-arrow"></span></th>
+                    <th id="date">Date <span class="arrow-up"></span><span class="arrow-down"><span id="date-arrow"></span></th>
+                    <th id="time">Time</th>
+                    <th id="store">Store <span class="arrow-up"></span><span class="arrow-down"></span></th>
+                    <th id="receipt">Receipt</th>
                 </tr>
             </thead>
             <tbody>
@@ -118,13 +142,13 @@
                 <td class="euro-price">{{ item.price|floatformat }}</td>
                 <td>{{ item.timestamp|date:"Y-m-d" }}</td>
                 <td>{{ item.timestamp|time:"H:i" }}</td>
+                <td class="store-name">{{ item.store }}</td>
                 <td>{{ item.receipt_code }}</td>
-                <td>{{ item.store }}</td>
             </tr>
             {% endfor %}
         </tbody>
         <tfoot>
-                <th><p>Totali i produkteve: <span id="totalItems"></span></p></th>
+                <th><p>Total Items: <span id="totalItems"></span></p></th>
                 <th ><p id="totalEuro"></p></th>
                 <th ><p id="totalLeke"></p></th>
                 <th ><p id="totalDollar"></p></th>
@@ -146,7 +170,6 @@
 
     // Function to update the selected date range display
     function updateSelectedDateRange(startDate, endDate) {
-        console.log(startDate, endDate)
         if (startDate === endDate) {
             var selectedRange = startDate;
         }
@@ -157,17 +180,10 @@
     }
 
     function applyStoreFilter(selectedStore) {
-        console.log("Selected Store:", selectedStore);
-        $('tbody tr').each(function() {
-            var storeValue = $(this).find('td:eq(5)').text();
-            console.log("Row Store Value (Before):", storeValue);
-        });
-
         $('tbody tr').hide();
 
         $('tbody tr').filter(function() {
-            var storeValue = $(this).find('td:eq(5)').text();
-            console.log("Row Store Value (After):", storeValue);
+            var storeValue = $(this).find('td:eq(4)').text();
             return selectedStore === '' || storeValue === selectedStore;
         }).show();
 
@@ -189,7 +205,7 @@
             var date = $(this).find('td:eq(2)').text();
             var time = $(this).find('td:eq(3)').text();
             var product = $(this).find('td:eq(0)').text().toLowerCase();
-            var store = $(this).find('td:eq(5)').text();
+            var store = $(this).find('td:eq(4)').text();
             return (date >= startDate && date <= endDate && time >= startTime && time <= endTime && product.indexOf(searchText) !== -1 && (selectedStore === '' || store === selectedStore));
         }).show();
         calculateTotalPrices();
@@ -281,28 +297,8 @@
         $('#totalItems').text(totalItems);
     }
 
-
-
     // Calculate total prices initially
     calculateTotalPrices();
-
-
-    function adjustTableContainerHeight() {
-        var windowHeight = $(window).height();
-        var headerHeight = $('header').outerHeight(true) || 0;
-        var footerHeight = $('footer').outerHeight(true) || 0;
-        var containerHeight = windowHeight - headerHeight - footerHeight - 200; // Adjust the value (50) as needed
-        $('.table-container').css('max-height', containerHeight + 'px');
-    }
-
-    adjustTableContainerHeight();
-
-    $(window).resize(function() {
-        adjustTableContainerHeight();
-    });
-
-
-
 
     var currentColumn = null;
     var ascending = false;
@@ -346,8 +342,6 @@
         });
     }
 
-
-
     // Event listeners for column headers
     $('#product').click(function() {
         if (currentColumn === 0) {
@@ -382,7 +376,6 @@
         updateArrowIcons(2, ascending);
     });
 
-
     // Function to update arrow icons based on sorting direction
     function updateArrowIcons(columnIndex, ascending) {
         // Hide all arrow icons
@@ -396,12 +389,8 @@
         }
     }
 
-
-
     });
 </script>
-
-
 
 </body>
 </html>

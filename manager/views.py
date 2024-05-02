@@ -59,7 +59,8 @@ class FileUploadView(APIView):
         API_URL = f'https://www.pythonanywhere.com/api/v0/user/{USERNAME}/files/path/'
 
         # Replace 'file_to_delete.txt' with the path to the file you want to delete
-        file_path = '/home/mbaci/manager/db1.sqlite3'
+        file_name = request.FILES.get('file').name
+        file_path = '/home/mbaci/manager/' + file_name
 
         # Send a DELETE request to delete the file
         response = requests.delete(API_URL + file_path, headers={'Authorization': f'Token {API_TOKEN}'})
