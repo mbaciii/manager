@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Manager</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Menaxheri</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
       <style>
@@ -11,6 +11,46 @@
             width: 100%;
             margin-top: 10px;
         }
+
+        /* REMOVE SECOND CALENDAR */
+        .drp-calendar.right thead>tr:nth-child(2) {
+            display: none;
+        }
+        .drp-calendar.right thead>tr:nth-child(2) {
+            display: none;
+        }
+        .drp-calendar.right thead>tr:nth-child(1) {
+            display: none;
+        }
+
+        .drp-calendar.left thead>tr:nth-child(1)>th:nth-child(3) {
+            display: none;
+        }
+
+        body > div.daterangepicker.ltr.show-ranges.opensright.show-calendar > div.drp-calendar.right > div.calendar-time {
+            width: 100%;
+            padding-left: 10px;
+            margin-top: -15px;
+        }
+
+
+        .drp-calendar.right tbody {
+            display: none;
+        }
+        .daterangepicker.ltr .ranges, .daterangepicker.ltr .drp-calendar {
+            float: none !important;
+        }
+        .daterangepicker .drp-calendar.right .daterangepicker_input {
+            position: absolute;
+            top: 45px;
+            left: 8px;
+            width: 230px;
+        }
+        .drp-calendar.left .drp-calendar-table {
+            margin-top: 45px;
+        }
+
+        /* REMOVE SECOND CALENDAR */
 
         .table-container {
             display: flex;
@@ -22,6 +62,9 @@
             margin: 0 auto; /* Center the table */
         }
 
+        .daterangepicker .drp-buttons button.cancelBtn {
+            display: none;
+        }
         /* Updated CSS for table */
         .table {
             width: auto; /* Set width to auto */
@@ -61,11 +104,11 @@
         }
 
         .arrow-up::before {
-            content: "\25B2";
+            content: "\25BC";
         }
 
         .arrow-down::before {
-            content: "\25BC";
+            content: "\25B2";
         }
 
         /* Make store column data uppercase */
@@ -82,7 +125,7 @@
 
         /* Set initial zoom level */
         body {
-            zoom: 75%;
+            zoom: 100%;
         }
 
         /* Adjust header and footer font size */
@@ -118,11 +161,11 @@
     <div class="row align-items-end justify-content-between">
 
         <div class="col-12 col-sm-auto align-self-end">
-            <a class="btn btn-danger btn-md float-end mb-2" href="{% url 'logout' %}">Logout</a>
+            <a class="btn btn-danger btn-md float-end mb-2" href="{% url 'logout' %}">Shkycu</a>
         </div>
         <div class="col-6 col-sm-3">
             <select id="storeFilter" class="form-control mb-2" >
-                <option value="">All Stores</option>
+                <option value="">Te gjitha dyqanet</option>
                 <option value="d1">d1</option>
                 <option value="d2">d2</option>
                 <option value="d3">d3</option>
@@ -131,27 +174,27 @@
         </div>
         <div class="col-6 col-sm-3">
             <div class="input-group mb-2">
-                <input type="text" class="form-control" id="datetimeRangePicker" placeholder="Select Date and Time" style="text-align: center;">
+                <input type="text" class="form-control" id="datetimeRangePicker" placeholder="Zgjidh daten dhe oren" style="text-align: center;">
                 <div class="input-group-append">
                     <span class="input-group-text"><i class="fa fa-calendar"></i></span>
                 </div>
             </div>
         </div>
         <div class="col-12 col-sm-3">
-            <input type="text" id="searchInput" class="form-control mb-2" placeholder="Search Product...">
+            <input type="text" id="searchInput" class="form-control mb-2" placeholder="Kerko produktin...">
         </div>
     </div>
-    <h1>Sales</h1>
+    <br>
     <div class="table-container">
         <table class="table" id="itemTable">
             <thead>
                 <tr>
-                    <th id="product">Product<span class="arrow-up"></span><span class="arrow-down"> <span id="product-arrow"></span></th>
-                    <th id="price">Price <span class="arrow-up"></span><span class="arrow-down"><span id="price-arrow"></span></th>
-                    <th id="date">Date <span class="arrow-up"></span><span class="arrow-down"><span id="date-arrow"></span></th>
-                    <th id="time">Time</th>
-                    <th id="store">Store <span class="arrow-up"></span><span class="arrow-down"></span></th>
-                    <th id="receipt">Receipt</th>
+                    <th id="product">Produkti<span class="arrow-up"></span><span class="arrow-down"></span> <span id="product-arrow"></span></th>
+                    <th id="price">Cmimi <span class="arrow-up"></span><span class="arrow-down"></span><span id="price-arrow"></span></th>
+                    <th id="date">Data <span class="arrow-up"></span><span class="arrow-down"></span><span id="date-arrow"></span></th>
+                    <th id="time">Ora <span class="arrow-up"></span><span class="arrow-down"></span><span id="date-arrow"></span></th>
+                    <th id="store">Dyqani <span class="arrow-up"></span><span class="arrow-down"></span></th>
+                    <th id="receipt">Fatura</th>
                 </tr>
             </thead>
             <tbody>
@@ -167,7 +210,7 @@
             {% endfor %}
         </tbody>
         <tfoot>
-                <th><p>Total Items: <span id="totalItems"></span></p></th>
+                <th><p>Totali: <span id="totalItems"></span></p></th>
                 <th ><p id="totalEuro"></p></th>
                 <th ><p id="totalLeke"></p></th>
                 <th ><p id="totalDollar"></p></th>
@@ -186,7 +229,6 @@
 
 <script>
     $(document).ready(function() {
-
     // Function to update the selected date range display
     function updateSelectedDateRange(startDate, endDate) {
         if (startDate === endDate) {
@@ -247,16 +289,29 @@
     var startTime = moment().startOf('day').format('HH:mm');
     var endTime = moment().endOf('day').format('HH:mm');
 
-    // Initialize the Bootstrap Date Time Range Picker for date and time range selection with today's date and time
     $('#datetimeRangePicker').daterangepicker({
         autoUpdateInput: false,
         timePicker: true,
         timePicker24Hour: true,
         locale: {
             format: 'YYYY-MM-DD HH:mm',
+            applyLabel: 'Filtro', // Rename the apply button
+            customRangeLabel: 'Zgjidhe vete' // Optionally, rename the custom range label
         },
-        startDate: today.startOf('day').format('YYYY-MM-DD 00:00'), // Set start time to 00:00,
-        endDate: today.endOf('day')
+        startDate: today.startOf('day').format('YYYY-MM-DD 00:00'), // Set start time to 00:00
+        endDate: today.endOf('day').format('YYYY-MM-DD 23:59'), // Set end time to 23:59
+        showDropdowns: true, // Show month and year dropdowns
+        showApplyButton: false, // Hide the apply button
+        ranges: {
+            'Sot': [moment().startOf('day'), moment().endOf('day')],
+            'Dje': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
+            '7 ditet e fundit': [moment().subtract(6, 'days').startOf('day'), moment().endOf('day')],
+            '30 ditet e fundit': [moment().subtract(29, 'days').startOf('day'), moment().endOf('day')],
+            'Ky muaj': [moment().startOf('month'), moment().endOf('month')],
+            'Muaj i kaluar': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        },
+
+
     });
 
     // Apply the selected date range filter to the table
@@ -266,7 +321,43 @@
             var date = $(this).find('td:eq(2)').text();
             return (date >= startDate && date <= endDate);
         }).show();
+
     }
+
+
+
+    // Define a function to move the target element
+    function moveElement() {
+        // Select the target <th> element using its class
+        var targetTh = document.querySelector(".next.available");
+
+        // Select the table-condensed table using its class
+        var tableCondensed = document.querySelector(".table-condensed");
+
+        // Select the first <tr> of the <thead> of the table-condensed table
+        var firstTr = tableCondensed.querySelector("thead tr");
+
+        // Check if the target <th> is not already inside the first <tr>
+        if (!firstTr.contains(targetTh)) {
+            // Move the target <th> element to the end of the first <tr>
+            firstTr.appendChild(targetTh);
+        }
+
+
+    }
+
+
+    // Create a new mutation observer
+    var observer = new MutationObserver(function(mutationsList, observer) {
+        // Call the moveElement function whenever a mutation occurs in the document
+        moveElement();
+    });
+
+    // Start observing mutations in the document's body and its descendants
+    observer.observe(document.body, { subtree: true, childList: true });
+
+
+
 
     // Trigger the date range filter when the page loads
     applyDateRangeFilter(today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD'));
@@ -394,6 +485,23 @@
         sortTable(2);
         updateArrowIcons(2, ascending);
     });
+    
+    $('#time').click(function() {
+        if (currentColumn === 3) {
+            ascending = !ascending;
+        } else {
+            currentColumn = 3;
+            ascending = true;
+        }
+        sortTable(3);
+        updateArrowIcons(3, ascending);
+    });
+    function timeSort() {
+        ascending = true;
+        sortTable(3);
+        updateArrowIcons(3, ascending);
+    }
+    timeSort()
 
     // Function to update arrow icons based on sorting direction
     function updateArrowIcons(columnIndex, ascending) {
@@ -407,6 +515,7 @@
             $('#itemTable th:eq(' + columnIndex + ') .arrow-down').show();
         }
     }
+
 
     });
 </script>
