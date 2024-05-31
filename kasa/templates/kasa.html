@@ -1,0 +1,411 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kasa</title>
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <style>
+        .product-btn {
+            background-color: white; /* Default color */
+            color: #007bff;
+            width: 200px; /* Set the width to 100% */
+            height: 150px;
+            margin-bottom: 10px; /* Add some bottom margin for spacing */
+            margin-right: 5px; /* Add some bottom margin for spacing */
+            margin-left: 5px; /* Add some bottom margin for spacing */
+            border-radius: 5px; /* Add rounded corners */
+            /* Add other styling properties as needed */
+            font-size: 24px;
+        }
+
+        .product-btn.selected {
+            background-color: #007bff; /* Color when selected */
+            color: white;
+        }
+        #totalu {
+            white-space: pre; /* or pre-wrap */
+        }
+        #totall {
+            white-space: pre; /* or pre-wrap */
+        }
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            font-size: 20px;
+        }
+
+        .price-group {
+            width: 88%;
+            height: 40px;
+            font-size: 20px;
+        }
+
+        .shporta-group {
+            width: 80%; /* Set the fixed width */
+            margin-left: auto; /* Auto margin to center horizontally */
+            margin-right: auto; /* Auto margin to center horizontally */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #register-btn {
+            width: 150px;
+            height: 100px;
+            font-size: 24px;
+        }
+
+        #perditeso {
+            width: 150px;
+            height: 100px;
+            font-size: 24px;
+        }
+
+    </style>
+    <meta name="viewport" content="maximum-scale=1.0, user-scalable=no">
+
+</head>
+<body>
+<div id="notification" class="notification">
+    <!-- Notification message will be displayed here -->
+</div>
+
+<div class="row col-md-12 justify-content-center">
+    <div class="row">
+        <div class="container col-md-12">
+            <br>
+            <h1 class="fw-bold text-center" >Produkti</h1>
+            <br>
+            <div class="row justify-content-center">
+                {% for product in products %}
+                <button class="btn btn-lg btn-primary product-btn fw-bold" data-product-id="{{ product.id }}">{{ product.name }}</button>
+                {% endfor %}
+            </div>
+            <br>
+            <div class="row justify-content-center align-items-en">
+                <div class="input-group price-group">
+                    <span class="input-group-text"  style="font-size: 20px">Cmimi</span>
+                    <input type="number" class="form-control" oninput="validateInput(this)" name="price" id="price" required  style="font-size: 20px">
+                    <button type="button" class="btn btn-primary" id="saleBtn" style="font-size: 20px; width: 120px">Shto</button>
+                    <p style="padding-left: 10px; margin-top: 15px"> EUR {{ euro }} / USD {{ dollar }}</p>
+                </div>
+            </div>
+
+            <br>
+            <br>
+            <br>
+            <br>
+            <div class="text-center">
+                <h1 class="fw-bold" id="shporta">Shporta</h1>
+            </div>
+            <div class="shporta-group align-items-center justify-content-center" style="max-height: 200px; overflow-y: auto;">
+                <ul class="list-group" id="sale-items-list" style="font-size: 20px">
+                    <!-- Sale items will be dynamically added here -->
+                </ul>
+            </div>
+            <div class="shporta-group align-items-center justify-content-center">
+                <ul class="list-group"  style="font-size: 20px">
+                    <li id="totale" class="fw-bold list-group-item">Total: EUR 0</li>
+                    <li id="totalu" class="fw-bold list-group-item" hidden></li>
+                    <li id="totall" class="fw-bold list-group-item" hidden></li>
+                </ul>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                    <button type="button" class="btn btn-success" id="register-btn">Regjistro</button>
+            </div>
+            <br>
+            <div class="shporta-group align-items-center justify-content-center" style="max-height: 200px; overflow-y: auto;">
+                <ul class="list-group" id="printo" style="white-space: pre;">
+                </ul>
+            </div>
+        </div>
+    </div>
+    <br>
+    <br>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    const productBtns = document.querySelectorAll('.product-btn');
+    const priceInput = document.getElementById('price');
+    const registerBtn = document.getElementById('register-btn');
+    const saleItemsList = document.getElementById('sale-items-list');
+    const input = document.getElementById('price');
+    const saleBtn = document.getElementById('saleBtn');
+
+    let currentProduct = null;
+    let currentReceipt = null;
+    let saleItems = [];
+    let last_sale_items = [];
+
+    function validateInput(input) {
+    input.value = input.value.replace(/\D/g, '');
+}
+
+    productBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            productBtns.forEach(btn => btn.classList.remove('selected'));
+            this.classList.add('selected');
+            currentProduct = this.dataset.productId;
+            //productIdInput.value = currentProduct;//mendoj sduhet
+        });
+    });
+
+    priceInput.addEventListener('input', (event) => {
+        priceInput.value = priceInput.value.replace(/[^0-9.]/g, '');
+    });
+
+    registerBtn.addEventListener('click', () => {
+        registerSale();
+    });
+
+    document.addEventListener('keydown', function(event) {
+        input.focus();
+        if (event.key === ' ') {
+            event.preventDefault();
+            registerSale();
+        }
+    });
+
+    function formatSaleItems(saleItems) {
+        var html = '<h1>Sale Items</h1>';
+        html += '<ul>';
+        saleItems.forEach(function(item) {
+            html += '<li>' + item.product + ': €' + item.price + '</li>';
+        });
+        html += '</ul>';
+        return html;
+    }
+
+    function printSaleItems(saleItems) {
+        if (Object.keys(saleItems).length !== 0){
+            var saleItemsHTML = generateReceiptHTML(saleItems);
+            var iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+            var doc = iframe.contentWindow.document;
+            doc.open();
+            doc.write(saleItemsHTML);
+            doc.close();
+            iframe.contentWindow.focus(); // Focus the iframe
+            iframe.contentWindow.print(); // Print the iframe content
+        }
+        else {
+            showNotification("Shto te pakten nje product.");
+        }
+    }
+
+    function calculateTotal(saleItems) {
+        let total = 0;
+        saleItems.forEach(function(item) {
+            total += parseInt(item.price);
+        });
+        return total.toFixed(0); // Return the total rounded to two decimal places
+    }
+
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            addSaleItem();
+        }
+    });
+    saleBtn.addEventListener('click', () => {
+        addSaleItem();
+    });
+
+    function showNotification(message) {
+        document.getElementById('notification').innerText = message;
+        document.getElementById('notification').style.display = 'block';
+        setTimeout(hideNotification, 5000);
+    }
+
+    function hideNotification() {
+        document.getElementById('notification').style.display = 'none';
+    }
+
+    function deleteSaleItem(prodID, price) {
+        const index = saleItems.findIndex(item => item.prodID === prodID && item.price === price);
+        console.log(saleItems)
+        if (index !== -1) {
+            saleItems.splice(index, 1);
+            console.log("Sale item with prodID " + prodID + " deleted successfully.");
+        } else {
+            console.log("Sale item with prodID " + prodID + " not found.");
+        }
+
+        let totalPrice = 0;
+
+        for (let i = 0; i < saleItems.length; i++) {
+            totalPrice += parseInt(saleItems[i].price);
+        }
+        totalPrice = totalPrice.toFixed(0);
+        console.log(totalPrice)
+        if (totalPrice === 0){
+            document.getElementById('totale').innerText = 'Total: EUR 0'
+            document.getElementById('totalu').setAttribute("hidden", true);
+            document.getElementById('totall').setAttribute("hidden", true);
+        }
+        else {
+            document.getElementById('totale').innerText = 'Total: EUR ' + totalPrice
+            let usdprice = totalPrice*{{ euro }}*{{ dollar }}/10000
+            usdprice = usdprice.toFixed(1).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            document.getElementById('totalu').textContent  = '          USD ' + usdprice
+            document.getElementById('totalu').removeAttribute("hidden");
+            let euprice = totalPrice*{{ euro }};
+            euprice = euprice.toLocaleString();
+            document.getElementById('totall').textContent  = '          LEK ' + euprice
+            document.getElementById('totall').removeAttribute("hidden");
+        }
+    }
+
+    function addSaleItem() {
+        try {
+            const prodID = document.getElementsByClassName('selected')[0].getAttribute('data-product-id');
+        } catch {
+            showNotification("Zgjidh produktin.");
+        }
+
+        const product = document.getElementsByClassName('selected')[0].textContent;
+        const price = document.getElementById('price').value;
+        const prodID = document.getElementsByClassName('selected')[0].getAttribute('data-product-id');
+
+        if ((!isNaN(parseFloat(price)) && isFinite(price)) === false) {
+            showNotification("Vendos cmimin.");
+        } else {
+            const listItem = document.createElement('li');
+            listItem.classList.add('list-group-item');
+            listItem.textContent = product + ' - €' + price;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Fshi';
+            deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'ms-2', 'float-end');
+            deleteButton.addEventListener('click', function() {
+                listItem.remove();
+                deleteSaleItem(prodID, price);
+            });
+
+            listItem.appendChild(deleteButton);
+
+            saleItemsList.appendChild(listItem);
+            document.getElementById('price').value = '';
+            newObj = {
+                prodID: prodID,
+                product: product,
+                price: price
+            }
+            saleItems.push(newObj)
+            console.log(saleItems)
+            let totalPrice = 0;
+
+            for (let i = 0; i < saleItems.length; i++) {
+                totalPrice += parseInt(saleItems[i].price);
+            }
+            console.log(totalPrice)
+            const tot = document.getElementById('totale').innerText = 'Total: EUR ' + totalPrice
+            usdprice = totalPrice*{{ euro }}*{{ dollar }}/10000
+            usdprice = usdprice.toFixed(1).replace(/\d(?=(\d{3})+\.)/g, '$&,');;
+            document.getElementById('totalu').textContent  = '          USD ' + usdprice
+            document.getElementById('totalu').removeAttribute("hidden");
+            euprice = totalPrice*{{ euro }};
+            euprice = euprice.toLocaleString();
+            document.getElementById('totall').textContent  = '          LEK ' + euprice
+            document.getElementById('totall').removeAttribute("hidden");
+
+        }
+    }
+
+    function registerSale() {
+        console.log(saleItems)
+
+        if (Object.keys(saleItems).length !== 0){
+            $.ajax({
+                url: '/register-sale/',
+                type: 'POST',
+                data: {
+                    'sale_items': JSON.stringify(saleItems),
+                },
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    console.log(response.last_sale)
+                    last_sale_items = response.last_sale
+                    if (Object.keys(response.last_sale).length !== 0){
+                        saleItems = [];
+                        console.log(last_sale_items)
+                        const ulElement = document.getElementById('sale-items-list');
+                        const liElements = ulElement.querySelectorAll('li');
+                        liElements.forEach(li => {
+                            li.remove();
+                        });
+                        const ulElement2 = document.getElementById('printo');
+                        const liElements2 = ulElement2.querySelectorAll('li');
+                        liElements2.forEach(li => {
+                            li.remove();
+                        });
+                        document.getElementById('totale').innerText = 'Total: EUR 0'
+                        document.getElementById('totalu').setAttribute("hidden", true);
+                        document.getElementById('totall').setAttribute("hidden", true);
+                        document.getElementById('printoprs-btn').removeAttribute("hidden");
+                        const printItemsList = document.getElementById('printo');
+                        for (let key in response.last_sale) {
+                            const listItem = document.createElement('li');
+                            listItem.classList.add('list-group-item');
+                            listItem.textContent = response.last_sale[key].product + ' - €' + response.last_sale[key].price;
+                            printItemsList.appendChild(listItem);
+                        }
+
+                        let totalPrice = 0;
+
+                        for (let i = 0; i < response.last_sale.length; i++) {
+                            totalPrice += parseInt(response.last_sale[i].price);
+                        }
+                        console.log(totalPrice)
+                        var listItem = document.createElement('li');
+                        listItem.classList.add('list-group-item');
+                        listItem.classList.add('fw-bold');
+                        listItem.textContent = 'Total: EUR ' + totalPrice
+                        printItemsList.appendChild(listItem);
+
+                        var listItem = document.createElement('li');
+                        listItem.classList.add('list-group-item');
+                        listItem.classList.add('fw-bold');
+                        usdprice = totalPrice*{{ euro }}*{{ dollar }}/10000
+                        usdprice = usdprice.toFixed(1).replace(/\d(?=(\d{3})+\.)/g, '$&,');;
+                        listItem.textContent = '          USD ' + usdprice
+                        printItemsList.appendChild(listItem);
+
+                        var listItem = document.createElement('li');
+                        listItem.classList.add('list-group-item');
+                        listItem.classList.add('fw-bold');
+                        euprice = totalPrice*{{ euro }};
+                        euprice = euprice.toLocaleString();
+                        listItem.textContent = '          LEK ' + euprice
+                        printItemsList.appendChild(listItem);
+
+                    }
+                },
+                error: function(error) {
+                    showNotification("Regjistrimi deshtoj. Rifresko faqen.", "error");
+                }
+            });
+        }
+        else {
+            showNotification("Shto te pakten nje product.");
+        }
+    }
+</script>
+
+</body>
+</html>
