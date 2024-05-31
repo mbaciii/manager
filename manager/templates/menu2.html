@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Special Dinner - Menu</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: #f3f0e9;
+        }
+
+        #image-container {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+        }
+
+        img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+
+
+
+        #menu-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .menu-img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        #language-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+
+    .flag-switch {
+        position: absolute;
+        top: 10px;
+        right: 40px;
+        outline: 0;
+        appearance: none;
+        -webkit-perspective: 1000;
+        -webkit-backface-visibility: hidden;
+        -webkit-transform: translate3d(0,0,0);
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        width: 65px;
+        height: 30px;
+        margin: 5px auto;
+
+        &:before , &:after {
+            position: absolute;
+            color: white;
+            font-family: 'Raleway', sans-serif;
+            top: 8px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        &:before {
+            left: -25px;
+            content: attr(data-first-lang);
+        }
+
+        &:after {
+            right: -23px;
+            content: attr(data-second-lang);
+        }
+
+        input{
+            display:none;
+        }
+
+        input + label {
+            display: block;
+            position: absolute;
+            cursor: pointer;
+            user-select: none;
+            width: 60px;
+
+            &:before, &:after {
+                content: "";
+                position: absolute;
+                border-radius: 30px;
+                transition: all 0.25s ease-in-out;
+            }
+
+            &:before {
+                height: 30px;
+                width: 60px;
+                background-color: #dad5c8; /* Red color */
+            }
+
+            &:after {
+                top: 1px;
+                left: 1px;
+                border: 2px solid #DFDFDF;
+                width: 24px;
+                height: 24px;
+                background: #eb3 url(https://i.imgur.com/pxxUsQs.jpg) 0px center; /* Red flag */
+                transform: translate(30px, 0);
+                -webkit-transform: translate(30px, 0);
+            }
+        }
+
+        input:checked + label:after {
+            background: #000233 url(data:image/png;base64,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)  center; /* Blue flag */
+            transition: all 0.25s ease-in-out;
+            background-size: 170%; /* Increase the size by 10% */
+            -webkit-transform: translate(0, 0);
+            background-position: center .5%; /* Move the background image down by 5% */
+            transform: translate(0, 0);
+        }
+
+        input:checked + label:before {
+            background-color: #dad5c8; /* Blue color */
+        }
+    }
+
+    </style>
+</head>
+<body>
+    <div id="image-container">
+        <img id="albanian-menu" src="{{ albanian_menu_image }}" class="menu-img" alt="Menu Image">
+        <img id="english-menu" src="{{ english_menu_image }}" class="menu-img" style="display: none;">
+    </div>
+
+    <div class="flag-switch">
+      <input type="checkbox" id="toggle-switch" onclick="toggleMenu()">
+      <label for="toggle-switch"></label>
+    </div>
+    <script>
+        // JavaScript code to adjust image size and enable scrolling
+        const imageContainer = document.getElementById('image-container');
+        const img = imageContainer.querySelector('img');
+
+        function adjustImageSize() {
+            const containerWidth = imageContainer.offsetWidth;
+            const containerHeight = imageContainer.offsetHeight;
+            const imageRatio = img.naturalWidth / img.naturalHeight;
+            const containerRatio = containerWidth / containerHeight;
+
+            if (imageRatio > containerRatio) {
+                img.style.width = '100%';
+                img.style.height = 'auto';
+            } else {
+                img.style.width = 'auto';
+                img.style.height = '100%';
+            }
+        }
+
+        img.addEventListener('load', adjustImageSize);
+        window.addEventListener('resize', adjustImageSize);
+    </script>
+
+
+    <!-- Bootstrap JS (optional, if you need Bootstrap JavaScript functionality) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function toggleMenu() {
+            var albanianMenu = document.getElementById('albanian-menu');
+            var englishMenu = document.getElementById('english-menu');
+            var toggleSwitch = document.getElementById('toggle-switch');
+
+            if (toggleSwitch.checked) {
+                albanianMenu.style.display = 'none';
+                englishMenu.style.display = 'block';
+            } else {
+                albanianMenu.style.display = 'block';
+                englishMenu.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -148,6 +148,15 @@
     }
 }
 
+        /* Toggle button style */
+.toggle-label {
+    display: flex;
+    align-items: center;
+}
+
+.toggle-label input[type="checkbox"] {
+    margin-right: 5px;
+}
 
 
 
@@ -170,6 +179,7 @@
                 <option value="d2">d2</option>
                 <option value="d3">d3</option>
                 <option value="d4">d4</option>
+                <option value="d5">d5</option>
             </select>
         </div>
         <div class="col-6 col-sm-3">
@@ -184,6 +194,14 @@
             <input type="text" id="searchInput" class="form-control mb-2" placeholder="Kerko produktin...">
         </div>
     </div>
+
+
+    <!-- Toggle switch -->
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="groupToggle">
+        <label class="form-check-label" for="groupToggle">Grupimi i produkteve</label>
+    </div>
+
     <br>
     <div class="table-container">
         <table class="table" id="itemTable">
@@ -229,6 +247,100 @@
 
 <script>
     $(document).ready(function() {
+        
+        
+        function Grouped() {
+            var isChecked = $('#groupToggle').is(':checked');
+            if (isChecked) {
+
+                // Group same products and their prices
+                var groupedProducts = {};
+                $('#itemTable tbody tr:visible').each(function() {
+                    var productName = $(this).find('td:eq(0)').text();
+                    var price = parseFloat($(this).find('td:eq(1)').text());
+
+                    if (groupedProducts[productName]) {
+                        groupedProducts[productName].price += price;
+                    } else {
+                        groupedProducts[productName] = {
+                            price: price
+                        };
+                    }
+                });
+
+                // Update table rows with grouped data
+                $('#itemTable tbody').empty();
+                for (var productName in groupedProducts) {
+                    $('#itemTable tbody').append('<tr><td>' + productName + '</td><td class="euro-price">' + groupedProducts[productName].price.toFixed(0) + '</td></tr>');
+                }
+            }
+            else {
+                // Restore original table data
+                $('#itemTable tbody').empty().append(`{% for item in items %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td class="euro-price">{{ item.price|floatformat }}</td>
+                        <td>{{ item.timestamp|date:"Y-m-d" }}</td>
+                        <td>{{ item.timestamp|time:"H:i" }}</td>
+                        <td class="store-name">{{ item.store }}</td>
+                        <td>{{ item.receipt_code }}</td>
+                    </tr>
+                {% endfor %}`);
+                applyFilters()
+            }
+        }
+
+
+        // Function to handle toggle switch event
+        $('#groupToggle').change(function() {
+            var isChecked = $(this).is(':checked');
+            if (isChecked) {
+
+                // Group same products and their prices
+                var groupedProducts = {};
+                $('#itemTable tbody tr:visible').each(function() {
+                    var productName = $(this).find('td:eq(0)').text();
+                    var price = parseFloat($(this).find('td:eq(1)').text());
+
+                    if (groupedProducts[productName]) {
+                        groupedProducts[productName].price += price;
+                    } else {
+                        groupedProducts[productName] = {
+                            price: price
+                        };
+                    }
+                });
+
+                // Update table rows with grouped data
+                $('#itemTable tbody').empty();
+                for (var productName in groupedProducts) {
+                    $('#itemTable tbody').append('<tr><td>' + productName + '</td><td class="euro-price">' + groupedProducts[productName].price.toFixed(0) + '</td></tr>');
+                }
+            } else {
+                // Restore original table data
+                $('#itemTable tbody').empty().append(`{% for item in items %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td class="euro-price">{{ item.price|floatformat }}</td>
+                        <td>{{ item.timestamp|date:"Y-m-d" }}</td>
+                        <td>{{ item.timestamp|time:"H:i" }}</td>
+                        <td class="store-name">{{ item.store }}</td>
+                        <td>{{ item.receipt_code }}</td>
+                    </tr>
+                {% endfor %}`);
+                applyFilters()
+            }
+        });
+
+
+
+
+
+        
+
+
+        
+        
     // Function to update the selected date range display
     function updateSelectedDateRange(startDate, endDate) {
         if (startDate === endDate) {
@@ -260,7 +372,8 @@
     });
 
     // Function to apply the combined filter
-    function applyCombinedFilter(startDate, endDate, startTime, endTime, searchText) {
+    function applyCombinedFilter(startDate, endDate, startTime, endTime, searchText, wasChecked) {
+        console.log(wasChecked)
         $('tbody tr').hide();
         $('tbody tr').filter(function() {
             var date = $(this).find('td:eq(2)').text();
@@ -271,16 +384,32 @@
         }).show();
         calculateTotalPrices();
         updateSelectedDateRange(startDate, endDate); // Update selected date range display
+        if (wasChecked) {
+            $('#groupToggle').prop("checked", true);
+            console.log('unchecked')
+            Grouped()
+        }
+
+
+
     }
 
     // Function to apply filters
     function applyFilters() {
+
+        var wasChecked = $('#groupToggle').is(':checked')
+        if ($('#groupToggle').is(':checked')) {
+            $('#groupToggle').prop("checked", false);
+            console.log('unchecked')
+            Grouped()
+        }
+
         var startDate = $('#datetimeRangePicker').data('daterangepicker').startDate.format('YYYY-MM-DD');
         var endDate = $('#datetimeRangePicker').data('daterangepicker').endDate.format('YYYY-MM-DD');
         var startTime = $('#datetimeRangePicker').data('daterangepicker').startDate.format('HH:mm');
         var endTime = $('#datetimeRangePicker').data('daterangepicker').endDate.format('HH:mm');
         var searchText = $('#searchInput').val().toLowerCase();
-        applyCombinedFilter(startDate, endDate, startTime, endTime, searchText); // Use the stored selected store value
+        applyCombinedFilter(startDate, endDate, startTime, endTime, searchText, wasChecked); // Use the stored selected store value
 
     }
 
@@ -322,6 +451,7 @@
             return (date >= startDate && date <= endDate);
         }).show();
 
+        Grouped()
     }
 
 
@@ -374,7 +504,15 @@
         var startTime = picker.startDate.format('HH:mm');
         var endTime = picker.endDate.format('HH:mm');
         var searchText = $('#searchInput').val().toLowerCase();
-        applyCombinedFilter(startDate, endDate, startTime, endTime, searchText);
+
+
+        var wasChecked = $('#groupToggle').is(':checked')
+        if ($('#groupToggle').is(':checked')) {
+            $('#groupToggle').prop("checked", false);
+            console.log('unchecked')
+            Grouped()
+        }
+        applyCombinedFilter(startDate, endDate, startTime, endTime, searchText, wasChecked);
     });
 
     // Search functionality
@@ -384,7 +522,15 @@
         var endDate = $('#datetimeRangePicker').data('daterangepicker').endDate.format('YYYY-MM-DD');
         var startTime = $('#datetimeRangePicker').data('daterangepicker').startDate.format('HH:mm');
         var endTime = $('#datetimeRangePicker').data('daterangepicker').endDate.format('HH:mm');
-        applyCombinedFilter(startDate, endDate, startTime, endTime, searchText);
+
+
+        var wasChecked = $('#groupToggle').is(':checked')
+        if ($('#groupToggle').is(':checked')) {
+            $('#groupToggle').prop("checked", false);
+            console.log('unchecked')
+            Grouped()
+        }
+        applyCombinedFilter(startDate, endDate, startTime, endTime, searchText, wasChecked);
     });
 
     // Function to calculate total prices in Euro, Dollar, and Leke

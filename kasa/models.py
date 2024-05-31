@@ -20,7 +20,7 @@ class Product(models.Model):
 
 
 class Sale(models.Model):
-    store = models.CharField(max_length=2, default='d1')
+    store = models.CharField(max_length=2, default='d5')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     receipt_code = models.CharField(max_length=20)

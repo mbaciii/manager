@@ -30,7 +30,8 @@ DOLLAR = 90
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['mbaci.pythonanywhere.com', '*']
+CSRF_TRUSTED_ORIGINS = ['https://accepted-full-boar.ngrok-free.app','https://*.127.0.0.1',' https://mbaci.pythonanywhere.com']
+ALLOWED_HOSTS = ['mbaci.pythonanywhere.com', 'accepted-full-boar.ngrok-free.app', '*']
 
 
 # Application definition
@@ -64,7 +65,9 @@ ROOT_URLCONF = 'manager.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['manager/templates'],
+        'DIRS': ['manager/templates',
+                 os.path.join(BASE_DIR, 'static'),
+                 ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,7 +89,7 @@ WSGI_APPLICATION = 'manager.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'db5.sqlite3',
 
     },
     'd1': {
@@ -105,7 +108,12 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db4.sqlite3',
     },
+    'd5': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db5.sqlite3',
+    },
 }
+
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -141,9 +149,12 @@ LOGOUT_REDIRECT_URL = '/'  # Set to the desired URL after logout
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
-
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
